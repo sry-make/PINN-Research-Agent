@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Model weights (too large for GitHub)
+pinn_qwen_gguf/
+pinn_qwen_gguf_gguf/*.gguf
+lora_pinn_model/*.safetensors
+outputs/checkpoint-*/optimizer.pt
+outputs/checkpoint-*/scheduler.pt
+outputs/checkpoint-*/rng_state*.pth
+outputs/checkpoint-*/training_args.bin
+outputs/checkpoint-*/*.safetensors
+
+# Unsloth compiled cache
+unsloth_compiled_cache/
+
+# ChromaDB (can be rebuilt with build_memory.py)
+chroma_db/
+
+# HuggingFace cache
+.cache/
+*.cache/
+
+# Papers (copyright, can be collected separately)
+papers/*.pdf
+
+# SFT datasets (large JSONL files)
+pinn_sft_dataset.jsonl
+pinn_sft_dataset_v2.jsonl
+pinn_sft_dataset_v2_clean.jsonl
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+*:Zone.Identifier
+*Zone.Identifier
