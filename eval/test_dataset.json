@@ -1,0 +1,247 @@
+[
+  {
+    "id": "q_001",
+    "query": "Raissi 2019 论文中 PINN 的损失函数由哪两部分组成？",
+    "ground_truth_sources": ["Raissi 等 - 2019 - Physics-informed neural networks A deep learning framework for solving forward and inverse problems.pdf"],
+    "ground_truth_chunk_keywords": ["MSE_u", "MSE_f", "loss function"],
+    "topic": "loss_function"
+  },
+  {
+    "id": "q_002",
+    "query": "PINN 在求解正问题 (forward problem) 时如何利用 PDE 残差作为约束？",
+    "ground_truth_sources": ["Raissi 等 - 2019 - Physics-informed neural networks A deep learning framework for solving forward and inverse problems.pdf"],
+    "ground_truth_chunk_keywords": ["forward problem", "residual", "collocation"],
+    "topic": "forward_problem"
+  },
+  {
+    "id": "q_003",
+    "query": "DeepXDE 库支持哪些类型的偏微分方程求解？",
+    "ground_truth_sources": ["Lu 等 - 2021 - DeepXDE A Deep Learning Library for Solving Differential Equations.pdf"],
+    "ground_truth_chunk_keywords": ["DeepXDE", "differential equations"],
+    "topic": "framework"
+  },
+  {
+    "id": "q_004",
+    "query": "DeepXDE 中如何实现残差自适应采样 (RAR) 策略？",
+    "ground_truth_sources": ["Lu 等 - 2021 - DeepXDE A Deep Learning Library for Solving Differential Equations.pdf"],
+    "ground_truth_chunk_keywords": ["RAR", "residual", "adaptive"],
+    "topic": "sampling"
+  },
+  {
+    "id": "q_005",
+    "query": "hp-VPINNs 方法如何结合 domain decomposition 与变分形式？",
+    "ground_truth_sources": ["Kharazmi 等 - 2021 - hp-VPINNs Variational physics-informed neural networks with domain decomposition.pdf"],
+    "ground_truth_chunk_keywords": ["hp-VPINNs", "variational", "domain decomposition"],
+    "topic": "variational"
+  },
+  {
+    "id": "q_006",
+    "query": "Conservative PINN (cPINN) 在守恒律问题上如何保证通量守恒？",
+    "ground_truth_sources": ["Jagtap 等 - 2020 - Conservative physics-informed neural networks on discrete domains for conservation laws Application.pdf"],
+    "ground_truth_chunk_keywords": ["conservative", "flux", "conservation law"],
+    "topic": "conservation"
+  },
+  {
+    "id": "q_007",
+    "query": "Cuomo 等人 2022 综述中总结了 PINN 面临的哪些主要挑战？",
+    "ground_truth_sources": ["Cuomo 等 - 2022 - Scientific Machine Learning Through Physics–Informed Neural Networks Where we are and What's Next.pdf"],
+    "ground_truth_chunk_keywords": ["challenges", "scientific machine learning"],
+    "topic": "survey"
+  },
+  {
+    "id": "q_008",
+    "query": "PINN 在计算固体力学中的应用有哪些典型场景？",
+    "ground_truth_sources": ["Hu 等 - 2024 - Physics-informed Neural Networks (PINN) for computational solid mechanics Numerical frameworks and.pdf"],
+    "ground_truth_chunk_keywords": ["solid mechanics", "computational"],
+    "topic": "application"
+  },
+  {
+    "id": "q_009",
+    "query": "Bai 等人提出的改进损失函数方法如何提升 2D 和 3D 固体力学问题的精度？",
+    "ground_truth_sources": ["Bai 等 - 2023 - A physics-informed neural network technique based on a modified loss function for computational 2D a.pdf"],
+    "ground_truth_chunk_keywords": ["modified loss function", "2D", "3D"],
+    "topic": "loss_function"
+  },
+  {
+    "id": "q_010",
+    "query": "Multi-Objective Loss Balancing 方法如何自动调节 PINN 中各损失项的权重？",
+    "ground_truth_sources": ["Bischof - Multi-Objective Loss Balancing for Physics-Informed Deep Learning.pdf"],
+    "ground_truth_chunk_keywords": ["multi-objective", "loss balancing", "weight"],
+    "topic": "loss_balancing"
+  },
+  {
+    "id": "q_011",
+    "query": "Psaros 等人 2022 提出的 Meta-learning PINN loss functions 的核心思路是什么？",
+    "ground_truth_sources": ["Psaros 等 - 2022 - Meta-learning PINN loss functions.pdf"],
+    "ground_truth_chunk_keywords": ["meta-learning", "loss function"],
+    "topic": "meta_learning"
+  },
+  {
+    "id": "q_012",
+    "query": "图网络 (Graph Networks) 如何学习模拟复杂物理系统？",
+    "ground_truth_sources": ["Sanchez-Gonzalez 等 - Learning to Simulate Complex Physics with Graph Networks.pdf"],
+    "ground_truth_chunk_keywords": ["graph network", "simulate", "physics"],
+    "topic": "graph_network"
+  },
+  {
+    "id": "q_013",
+    "query": "Haghighat 等人提出的深度学习框架如何用于固体力学中的逆问题和代理建模？",
+    "ground_truth_sources": ["Haghighat 等 - 2021 - A physics-informed deep learning framework for inversion and surrogate modeling in solid mechanics.pdf"],
+    "ground_truth_chunk_keywords": ["inversion", "surrogate", "solid mechanics"],
+    "topic": "inverse_problem"
+  },
+  {
+    "id": "q_014",
+    "query": "基于 CNN 的混合 PINN 方法相比标准 PINN 有什么效率优势？",
+    "ground_truth_sources": ["Fang - 2022 - A High-Efficient Hybrid Physics-Informed Neural Networks Based on Convolutional Neural Network.pdf"],
+    "ground_truth_chunk_keywords": ["CNN", "hybrid", "efficient"],
+    "topic": "architecture"
+  },
+  {
+    "id": "q_015",
+    "query": "NAS-PINN 如何利用神经架构搜索来优化 PINN 的网络结构？",
+    "ground_truth_sources": ["Wang和Zhong - 2024 - NAS-PINN Neural architecture search-guided physics-informed neural network for solving PDEs.pdf"],
+    "ground_truth_chunk_keywords": ["NAS", "architecture search", "PDE"],
+    "topic": "architecture"
+  },
+  {
+    "id": "q_016",
+    "query": "GPT-PINN 如何实现面向 PINN 的非侵入式元学习？",
+    "ground_truth_sources": ["Chen和Koohy - 2024 - GPT-PINN Generative Pre-Trained Physics-Informed Neural Networks toward non-intrusive Meta-learning.pdf"],
+    "ground_truth_chunk_keywords": ["GPT-PINN", "meta-learning", "non-intrusive"],
+    "topic": "meta_learning"
+  },
+  {
+    "id": "q_017",
+    "query": "KAN-Informed Neural Network 在求解正反问题中相比标准 MLP 有什么改进？",
+    "ground_truth_sources": ["Wang 等 - 2024 - Kolmogorov Arnold Informed neural network A physics-informed deep learning framework for solving fo.pdf"],
+    "ground_truth_chunk_keywords": ["Kolmogorov Arnold", "KAN"],
+    "topic": "architecture"
+  },
+  {
+    "id": "q_018",
+    "query": "Rao 等人如何用 PINN 求解无标签数据的弹性动力学问题？",
+    "ground_truth_sources": ["Rao 等 - 2021 - Physics-Informed Deep Learning for Computational Elastodynamics without Labeled Data.pdf"],
+    "ground_truth_chunk_keywords": ["elastodynamics", "without labeled data"],
+    "topic": "elastodynamics"
+  },
+  {
+    "id": "q_019",
+    "query": "Exact Dirichlet boundary PINN (EPINN) 如何严格满足 Dirichlet 边界条件？",
+    "ground_truth_sources": ["Wang 等 - 2023 - Exact Dirichlet boundary Physics-informed Neural Network EPINN for solid mechanics.pdf"],
+    "ground_truth_chunk_keywords": ["Dirichlet", "exact boundary", "EPINN"],
+    "topic": "boundary_condition"
+  },
+  {
+    "id": "q_020",
+    "query": "Li 等人 2021 提出的 physics-guided 弹性板框架中，基于控制方程的方法和基于能量的方法有何区别？",
+    "ground_truth_sources": ["Li 等 - 2021 - A physics-guided neural network framework for elastic plates Comparison of governing equations-base.pdf"],
+    "ground_truth_chunk_keywords": ["elastic plate", "governing equations", "energy-based"],
+    "topic": "plate_mechanics"
+  },
+  {
+    "id": "q_021",
+    "query": "Finite-PINN 如何结合有限元思想来改进 PINN 对固体力学问题的求解？",
+    "ground_truth_sources": ["Li 等 - 2024 - Finite-PINN A Physics-Informed Neural Network Architecture for Solving Solid Mechanics Problems wit.pdf"],
+    "ground_truth_chunk_keywords": ["Finite-PINN", "finite element"],
+    "topic": "fem_hybrid"
+  },
+  {
+    "id": "q_022",
+    "query": "张等人 2021 如何用深度学习方法求解时域 Maxwell 方程组的电磁仿真？",
+    "ground_truth_sources": ["Zhang 等 - 2021 - A Maxwell's Equations Based Deep Learning Method for Time Domain Electromagnetic Simulations.pdf"],
+    "ground_truth_chunk_keywords": ["Maxwell", "electromagnetic", "time domain"],
+    "topic": "electromagnetics"
+  },
+  {
+    "id": "q_023",
+    "query": "基于迁移学习的多保真度 PINN 方法核心思路是什么？",
+    "ground_truth_sources": ["Chakraborty - 2021 - Transfer learning based multi-fidelity physics informed deep neural network.pdf"],
+    "ground_truth_chunk_keywords": ["transfer learning", "multi-fidelity"],
+    "topic": "multi_fidelity"
+  },
+  {
+    "id": "q_024",
+    "query": "Meng 和 Karniadakis 提出的复合神经网络如何融合多保真度数据？",
+    "ground_truth_sources": ["Meng和Karniadakis - 2020 - A composite neural network that learns from multi-fidelity data Application to function approximati.pdf"],
+    "ground_truth_chunk_keywords": ["composite neural network", "multi-fidelity"],
+    "topic": "multi_fidelity"
+  },
+  {
+    "id": "q_025",
+    "query": "Penwarden 等人 2022 如何将多保真度建模应用于 PINN？",
+    "ground_truth_sources": ["Penwarden 等 - 2022 - Multifidelity modeling for Physics-Informed Neural Networks (PINNs).pdf"],
+    "ground_truth_chunk_keywords": ["multifidelity", "PINN"],
+    "topic": "multi_fidelity"
+  },
+  {
+    "id": "q_026",
+    "query": "Howard 等人 2023 的多保真度深度算子网络如何结合数据驱动与物理约束？",
+    "ground_truth_sources": ["Howard 等 - 2023 - Multifidelity deep operator networks for data-driven and physics-informed problems.pdf"],
+    "ground_truth_chunk_keywords": ["operator network", "multifidelity", "data-driven"],
+    "topic": "operator_network"
+  },
+  {
+    "id": "q_027",
+    "query": "Force density-informed neural network 如何应用于张拉整体结构的预应力设计？",
+    "ground_truth_sources": ["Trinh 等 - 2022 - Force density-informed neural network for prestress design of tensegrity structures with multiple se.pdf"],
+    "ground_truth_chunk_keywords": ["force density", "tensegrity", "prestress"],
+    "topic": "structural"
+  },
+  {
+    "id": "q_028",
+    "query": "Zhang 等人 2024 如何用物理引导的神经网络进行三维边坡稳定性建模？",
+    "ground_truth_sources": ["Zhang 等 - 2024 - Physics-guided neural network-based framework for 3D modeling of slope stability.pdf"],
+    "ground_truth_chunk_keywords": ["slope stability", "3D", "physics-guided"],
+    "topic": "geotechnical"
+  },
+  {
+    "id": "q_029",
+    "query": "PINN 用于旅行式自主移动吊车的载荷摆动预测效果如何？",
+    "ground_truth_sources": ["Zhou 等 - 2025 - Physics-informed neural network for load sway prediction in travelling autonomous mobile cranes.pdf"],
+    "ground_truth_chunk_keywords": ["load sway", "crane", "prediction"],
+    "topic": "application"
+  },
+  {
+    "id": "q_030",
+    "query": "Ramezankhani 等人 2022 如何将多保真度 PINN 应用于智能制造中的复合材料问题？",
+    "ground_truth_sources": ["Ramezankhani 等 - 2022 - A Data-driven Multi-fidelity Physics-informed Learning Framework for Smart Manufacturing A Composit.pdf"],
+    "ground_truth_chunk_keywords": ["smart manufacturing", "composite", "multi-fidelity"],
+    "topic": "manufacturing"
+  },
+  {
+    "id": "q_031",
+    "query": "Kalimullah 等人如何结合迁移学习和 PINN 进行各向异性复合材料中的声源定位？",
+    "ground_truth_sources": ["Kalimullah 等 - 2023 - A probabilistic framework for source localization in anisotropic composite using transfer learning b.pdf"],
+    "ground_truth_chunk_keywords": ["source localization", "anisotropic", "transfer learning"],
+    "topic": "nde"
+  },
+  {
+    "id": "q_032",
+    "query": "数据驱动的 physics-informed 本构元模型如何处理复杂流体的多保真度问题？",
+    "ground_truth_sources": ["Mahmoudabadbozchelou 等 - 2021 - Data-driven physics-informed constitutive metamodeling of complex fluids A multifidelity neural net.pdf"],
+    "ground_truth_chunk_keywords": ["constitutive", "complex fluids", "multifidelity"],
+    "topic": "fluid"
+  },
+  {
+    "id": "q_033",
+    "query": "AI for PDEs 在计算力学中的人工智能方法综述涵盖了哪些核心主题？",
+    "ground_truth_sources": ["Wang 等 - Artiﬁcial intelligence for partial diﬀerential equations in computational mechanics A review.pdf"],
+    "ground_truth_chunk_keywords": ["artificial intelligence", "PDE", "computational mechanics"],
+    "topic": "survey"
+  },
+  {
+    "id": "q_034",
+    "query": "AI for PDEs 在固体力学领域的最新研究进展包括哪些方向？",
+    "ground_truth_sources": ["AI+for+PDEs在固体力学领域的研究进展.pdf"],
+    "ground_truth_chunk_keywords": ["固体力学", "PDE"],
+    "topic": "survey_cn"
+  },
+  {
+    "id": "q_035",
+    "query": "Bai 等人认为 physics-guided 和 data-guided AI 框架在计算力学中的未来发展方向是什么？",
+    "ground_truth_sources": ["Bai 等 - Towards the future of physics- and data-guided AI frameworks in computational mechanics.pdf"],
+    "ground_truth_chunk_keywords": ["future", "physics-guided", "data-guided"],
+    "topic": "future_directions"
+  }
+]

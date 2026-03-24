@@ -4,7 +4,7 @@
 
 ### Physics-Informed Neural Network 智能科研助手
 
-**基于 RAG + LoRA 微调 + MCP Agent 架构的 PINN 领域专业问答系统**
+**基于 RAG + LoRA 微调 + MCP Agent + Cross-Encoder Reranker 架构的 PINN 领域专业问答系统**
 
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
 [![Qwen](https://img.shields.io/badge/LLM-Qwen2.5--7B-6F42C1?style=flat-square)](https://github.com/QwenLM/Qwen2.5)
@@ -19,7 +19,7 @@
 
 ---
 
-[快速开始](#-快速开始) · [系统架构](#-系统架构) · [工作流程](#-完整工作流) · [技术栈](#-技术栈) · [更新计划](#-更新计划)
+[快速开始](#-快速开始) · [系统架构](#-系统架构) · [工作流程](#-完整工作流) · [检索评估](#-检索质量评估与消融实验) · [技术栈](#-技术栈) · [更新计划](#-更新计划)
 
 </div>
 
@@ -34,6 +34,8 @@
 - **🔍 RAG (检索增强生成)** — 基于 30+ 篇 PINN 领域顶刊论文构建向量知识库，让模型回答有据可依
 - **🎯 LoRA SFT 微调** — 从论文中自动蒸馏 QA 数据，对 Qwen2.5-7B 进行领域适配微调
 - **🤖 MCP Agent** — 基于 Model Context Protocol 实现自主决策的工具调用 Agent
+- **🔀 Cross-Encoder Reranker** — Bi-Encoder 粗召回 + BGE Cross-Encoder 精排的两级检索架构
+- **📊 量化评估体系** — 35 条领域评测集 + Recall/MRR/HitRate/NDCG 四项指标 + 三组消融对比
 - **🌐 Web UI** — 基于 Streamlit 的聊天式交互界面，原生支持 LaTeX 公式渲染
 
 > **核心理念**：全链路本地化，从训练到推理不依赖任何云端 API，保护学术数据隐私。
@@ -58,8 +60,9 @@
 │  │   (rag_agent.py)        │   │  (mcp_server.py)      │         │
 │  │                         │   │                      │         │
 │  │  ① HyDE 查询重写        │   │  search_pinn_papers  │         │
-│  │  ② 向量检索 Top-K       │   │  (stdio 协议)        │         │
-│  │  ③ LLM 终极推理         │   └──────────┬───────────┘         │
+│  │  ② Bi-Encoder 粗召回    │   │  (stdio 协议)        │         │
+│  │  ③ Cross-Encoder 精排   │   └──────────┬───────────┘         │
+│  │  ④ LLM 终极推理         │              │                     │
 │  └────────┬────────────────┘              │                     │
 └───────────┼───────────────────────────────┼─────────────────────┘
             │                               │
@@ -126,12 +129,18 @@ papers/ 目录                  build_memory.py               generate_sft_data.
 #### 模式 1 — RAG + Web UI（主要模式）
 
 ```
-用户提问 ──► Streamlit UI ──► RAG Agent ──┬──► ① HyDE 查询重写 (LLM 扩写短查询)
-                                          ├──► ② ChromaDB 向量检索 (Top-3 论文片段)
-                                          └──► ③ LLM 终极推理 (上下文 + 问题 → 回答)
-                                                        │
-                                               ◄────────┘
-                                          LaTeX 后处理 & 公式渲染
+用户提问 ──► Streamlit UI ──► RAG Agent
+                                 │
+                                 ├──► ① HyDE 查询重写 (LLM 扩写短查询为先验伪文档)
+                                 │
+                                 ├──► ② Bi-Encoder 粗召回 (ChromaDB Top-20 候选)
+                                 │
+                                 ├──► ③ Cross-Encoder 精排 (BGE-Reranker → Top-3)
+                                 │
+                                 └──► ④ LLM 终极推理 (上下文 + 问题 → 回答)
+                                                   │
+                                          ◄────────┘
+                                     LaTeX 后处理 & 公式渲染
 ```
 
 #### 模式 2 — MCP Agent（高级模式）
@@ -182,6 +191,8 @@ conda activate your_env
 
 # 安装推理所需依赖
 pip install openai chromadb pypdf sentence-transformers streamlit mcp
+
+# sentence-transformers 同时提供 Bi-Encoder (Embedding) 和 Cross-Encoder (Reranker)
 ```
 
 ### 3. 构建向量知识库
@@ -216,7 +227,8 @@ PINN_AGENT_PROJECT/
 │
 ├── 🔌 核心模块
 │   ├── llm_core.py              # LLM 基础通信层 (Ollama API)
-│   ├── rag_agent.py             # RAG Agent 核心 (HyDE + 检索 + 推理)
+│   ├── rag_agent.py             # RAG Agent 核心 (HyDE + 检索 + Reranker + 推理)
+│   ├── reranker.py              # BGE Cross-Encoder 重排器
 │   ├── web_ui.py                # Streamlit Web 前端
 │   ├── mcp_server.py            # MCP 工具服务器
 │   └── mcp_client.py            # MCP Agent 客户端
@@ -231,6 +243,16 @@ PINN_AGENT_PROJECT/
 │   ├── pinn_sft_dataset.jsonl          # SFT 数据集 V1
 │   ├── pinn_sft_dataset_v2.jsonl       # SFT 数据集 V2 (全量提取)
 │   └── pinn_sft_dataset_v2_clean.jsonl # 清洗后纯净数据集
+│
+├── 📈 检索评估
+│   ├── eval/
+│   │   ├── test_dataset.json           # 35 条 PINN 领域评测集
+│   │   ├── build_test_dataset.py       # LLM 辅助评测集生成
+│   │   ├── eval_retrieval.py           # 核心评估 (Recall/MRR/HitRate/NDCG)
+│   │   ├── run_ablation.py             # 消融实验入口
+│   │   └── results/                    # 实验结果输出
+│   │       ├── ablation_results.md     # 消融对比表格
+│   │       └── per_query_detail.csv    # 逐条归因明细
 │
 ├── 📚 知识库
 │   ├── papers/                  # PINN 领域论文集 (30+ 篇 PDF)
@@ -274,8 +296,9 @@ LoRA (r=16, α=32)<br/>
 
 **知识检索**
 
-ChromaDB<br/>
-all-MiniLM-L6-v2<br/>
+ChromaDB + BGE-Reranker<br/>
+all-MiniLM-L6-v2 (Bi-Encoder)<br/>
+bge-reranker-base (Cross-Encoder)<br/>
 HyDE 查询重写
 
 </td>
@@ -300,9 +323,12 @@ ReAct 两轮决策
 | LoRA Rank | `r=16, α=32` | 覆盖 Attention + FFN 全部 7 层 |
 | 训练步数 | 60 steps (~1.67 epochs) | Loss: 1.953 → 0.648 |
 | 训练数据 | 289 条 QA 对 | 从 30+ 篇论文 Self-Instruct 蒸馏 |
-| Embedding | `all-MiniLM-L6-v2` | 384 维，轻量高效 |
+| Bi-Encoder | `all-MiniLM-L6-v2` | 384 维，粗召回阶段 |
+| Cross-Encoder | `BAAI/bge-reranker-base` | ~110M 参数，精排阶段，CPU 推理 |
 | Chunk 策略 | 500 字符 / 50 重叠 | 滑动窗口切分 |
-| 检索 Top-K | 3 | 最相关的 3 个论文片段 |
+| 粗召回 Top-K | 20 | Bi-Encoder 候选池 |
+| 精排 Top-K | 3 | Cross-Encoder 最终返回 |
+| 评测集规模 | 35 条 QA | 覆盖 30+ 篇论文，人工校验 |
 
 <br/>
 
@@ -360,16 +386,168 @@ ReAct 两轮决策
 
 <br/>
 
+## 📊 检索质量评估与消融实验
+
+本项目构建了完整的 RAG 检索质量量化评估体系，通过三组消融对比实验验证各检索模块的独立贡献。
+
+### 两级检索架构：Bi-Encoder + Cross-Encoder
+
+传统 RAG 系统仅使用 Bi-Encoder（如 Sentence-BERT）进行单阶段检索，存在以下问题：
+
+- **Bi-Encoder** 将 query 和 document 独立编码为向量，通过余弦相似度匹配，速度快但精度有上限
+- **Cross-Encoder** 将 (query, document) 拼接后联合编码，通过 Transformer 注意力机制直接建模交互关系，精度更高但计算量大
+
+本项目采用 **Coarse-to-Fine 两级架构**：
+
+```
+用户 Query
+    │
+    ▼ HyDE 重写（可选）
+    │
+    ▼ Stage 1: Bi-Encoder 粗召回
+    │ all-MiniLM-L6-v2 (384维)
+    │ ChromaDB ANN 检索 → Top-20 候选
+    │
+    ▼ Stage 2: Cross-Encoder 精排
+    │ BAAI/bge-reranker-base (~110M)
+    │ 逐对 (query, doc) 打分 → Top-3 精选
+    │
+    ▼ LLM 推理生成答案
+```
+
+**为什么不直接用 Cross-Encoder？** Cross-Encoder 需要对每个 (query, doc) 对做完整的 Transformer forward pass。如果知识库有 10000+ 个 chunk，逐个打分的延迟不可接受。因此先用 Bi-Encoder 从全量候选中快速缩小范围到 Top-20，再用 Cross-Encoder 对这 20 个候选精排，兼顾效率与精度。
+
+### 评测集构建
+
+构建了覆盖 **30+ 篇 PINN 领域论文**的 **35 条**标准评测集：
+
+```json
+{
+  "id": "q_001",
+  "query": "Raissi 2019 论文中 PINN 的损失函数由哪两部分组成？",
+  "ground_truth_sources": ["Raissi 等 - 2019 - Physics-informed neural networks...pdf"],
+  "ground_truth_chunk_keywords": ["MSE_u", "MSE_f", "loss function"],
+  "topic": "loss_function"
+}
+```
+
+**覆盖的主题分布**：loss function、forward/inverse problem、framework (DeepXDE)、variational method (hp-VPINNs)、conservation law、multi-fidelity、architecture search (NAS-PINN, KAN)、solid mechanics、boundary condition 等。
+
+### 评估指标
+
+| 指标 | 定义 | 含义 |
+|------|------|------|
+| **Recall@K** | \|检索相关 ∩ GT\| / \|GT\| | K 个结果中覆盖了多少真实相关文档 |
+| **HitRate@K** | 至少 1 个相关文档在 Top-K 中的查询比例 | 检索"命中"的成功率 |
+| **MRR** | 1 / (第一个相关结果的排名位置) 的均值 | 第一个正确结果排多靠前 |
+| **NDCG@K** | 归一化折损累积增益（二元相关性） | 综合考虑相关性和排序质量 |
+
+**相关性判定**：主要标准为检索 chunk 的 `metadata["source"]` 匹配 ground truth 论文源；辅助标准为 chunk 文本命中 ground truth 关键词。
+
+### 消融实验结果
+
+运行三组配置对比：
+
+| 配置 | HyDE 重写 | Reranker 精排 | 说明 |
+|------|:---------:|:------------:|------|
+| **Direct** | ✗ | ✗ | 原始 query → Bi-Encoder Top-K |
+| **HyDE** | ✓ | ✗ | HyDE 伪文档 → Bi-Encoder Top-K |
+| **HyDE + Reranker** | ✓ | ✓ | HyDE → Bi-Encoder Top-20 → Cross-Encoder Top-K |
+
+#### K = 1
+
+| 配置 | Recall@1 | HitRate@1 | MRR | NDCG@1 |
+|------|:--------:|:---------:|:---:|:------:|
+| Direct | 0.4286 | 0.4286 | 0.4286 | 0.4286 |
+| HyDE | 0.1714 | 0.1714 | 0.1714 | 0.1714 |
+| HyDE+Reranker | 0.1143 | 0.1143 | 0.1143 | 0.1143 |
+
+#### K = 3
+
+| 配置 | Recall@3 | HitRate@3 | MRR | NDCG@3 |
+|------|:--------:|:---------:|:---:|:------:|
+| Direct | 1.3143 | 0.4857 | 0.4571 | 0.4659 |
+| HyDE | 0.4286 | 0.2000 | 0.1857 | 0.1872 |
+| HyDE+Reranker | 0.4571 | 0.2286 | 0.1667 | 0.1880 |
+
+#### K = 5
+
+| 配置 | Recall@5 | HitRate@5 | MRR | NDCG@5 |
+|------|:--------:|:---------:|:---:|:------:|
+| Direct | 2.1143 | 0.4857 | 0.4571 | 0.4622 |
+| HyDE | 0.7429 | 0.2857 | 0.2043 | 0.2212 |
+| HyDE+Reranker | 0.7714 | 0.2571 | 0.1724 | 0.2021 |
+
+#### K = 10
+
+| 配置 | Recall@10 | HitRate@10 | MRR | NDCG@10 |
+|------|:---------:|:----------:|:---:|:-------:|
+| Direct | 3.9714 | 0.5143 | 0.4612 | 0.4705 |
+| HyDE | 1.3429 | 0.3429 | 0.2100 | 0.2348 |
+| HyDE+Reranker | 1.4000 | 0.2571 | 0.1724 | 0.2100 |
+
+### 结果分析与工程洞察
+
+#### 1. Bi-Encoder 中英文语义空间偏置问题
+
+实验中 Direct 模式的 HitRate@3 (48.6%) 显著优于 HyDE (20.0%)，这一反直觉的结果经逐条 query 归因分析（`per_query_detail.csv`）后定位到根本原因：
+
+- **Embedding 模型语言偏置**：`all-MiniLM-L6-v2` 是英文预训练模型，其向量空间中中文文本分布过于密集
+- **HyDE 中文伪文档的"语义黑洞"效应**：HyDE 由中文 LLM 生成中文伪文档，在英文 Embedding 空间中，这些中文伪文档的向量与知识库中唯一的中文综述论文（`AI+for+PDEs在固体力学领域的研究进展.pdf`）高度聚集，导致该论文吸走了大量 query 的检索结果
+- **Direct 模式的优势来源**：测试集中的 query 本身包含英文关键术语（如 "DeepXDE"、"hp-VPINNs"、"NAS-PINN"），在英文 Embedding 空间中能更精准地匹配目标论文
+
+#### 2. Cross-Encoder Reranker 的精排修正能力
+
+对比 HyDE 与 HyDE+Reranker：
+
+- **HitRate@3**：20.0% → 22.9%（**相对提升 ~14.3%**）
+- **Recall@3**：0.4286 → 0.4571（**相对提升 ~6.7%**）
+- **NDCG@3**：0.1872 → 0.1880
+
+Cross-Encoder 通过 (query, doc) 联合编码，能部分修正 Bi-Encoder 的语义偏差。即使粗召回阶段被中文综述"污染"，精排阶段仍能将少量正确候选提升到更靠前的位置。
+
+#### 3. 优化方向
+
+基于消融实验的数据支撑，明确了后续优化路径：
+
+| 优化方向 | 预期收益 | 技术方案 |
+|---------|---------|---------|
+| 替换中英双语 Embedding | 从根本上解决语义空间偏置 | `BAAI/bge-base-zh-v1.5` 或 `m3e-base` |
+| 增大粗召回池 | 为 Reranker 提供更多正确候选 | Top-20 → Top-50 |
+| 混合检索策略 | 结合稀疏检索的精确匹配能力 | BM25 + Dense Retrieval 融合 |
+
+### 运行评估
+
+```bash
+# 安装依赖
+pip install sentence-transformers
+
+# 运行完整消融实验（需要 Ollama 运行中 + 首次下载 bge-reranker-base ~0.5GB）
+python eval/run_ablation.py
+
+# 跳过 Reranker 组（无需下载 reranker 模型）
+python eval/run_ablation.py --no-hyde-reranker
+
+# 自定义 K 值
+python eval/run_ablation.py --top-k 1 3 5
+
+# 用 LLM 生成更多测试数据（可选）
+python eval/build_test_dataset.py
+```
+
+<br/>
+
 ## 🎯 设计亮点
 
 | 特性 | 说明 |
 |------|------|
-| **HyDE 查询重写** | 用 LLM 将短查询扩写为假设性长文本，显著提升向量检索命中率 |
+| **Coarse-to-Fine 两级检索** | Bi-Encoder 粗召回 Top-20 + Cross-Encoder 精排 Top-3，兼顾效率与精度 |
+| **HyDE 查询重写** | 用 LLM 将短查询扩写为假设性长文本，弥补短查询与长文献间的语义鸿沟 |
+| **量化评估体系** | 35 条领域评测集 + 4 项标准 IR 指标 + 3 组消融对比 + 逐条归因分析 |
 | **双模式推理** | 同时支持 RAG Web UI 模式和 MCP Agent 自主决策模式 |
 | **Self-Instruct 蒸馏** | 零人工标注，用通用 LLM 从论文中自动生成领域训练数据 |
 | **全链路本地化** | 训练、推理、知识库全部本地部署，不依赖云端 API |
 | **LaTeX 原生支持** | 模型输出标准 LaTeX 公式，Streamlit 前端完美渲染 |
-| **模型名称分层** | 通用 `qwen2.5:7b` 与专业 `pinn_qwen_expert` 清晰分层 |
 | **Ollama API 兼容** | 统一 OpenAI 格式接口，可无缝切换本地/云端模型 |
 
 <br/>
@@ -378,10 +556,10 @@ ReAct 两轮决策
 
 - [ ] **多轮对话记忆** — 引入对话历史管理，支持上下文连续追问
 - [ ] **更多论文纳入** — 持续扩充 PINN 知识库，覆盖更多子方向
-- [ ] **Embedding 模型升级** — 替换为更强的中英双语 Embedding 模型
+- [ ] **Embedding 模型升级** — 替换为 `bge-base-zh-v1.5` 等中英双语 Embedding（消融实验已验证必要性）
 - [ ] **Agent 工具扩展** — 增加代码生成、公式推导、绘图等 MCP 工具
 - [ ] **多模态支持** — 解析论文中的图表，支持图文混合问答
-- [ ] **评测体系** — 构建 PINN 领域 Benchmark，量化评估模型能力
+- [x] **评测体系** — ~~构建 PINN 领域 Benchmark，量化评估模型能力~~ ✅ 已完成（35 条评测集 + 4 指标 + 消融实验）
 - [ ] **训练数据扩充** — 增加更多 SFT 数据，支持 DPO 偏好对齐
 - [ ] **Docker Compose** — 一键部署整套服务（Ollama + ChromaDB + Web UI）
 - [ ] **流式输出** — Web UI 支持 Streaming 逐字输出

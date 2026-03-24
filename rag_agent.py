@@ -41,27 +41,60 @@ def rewrite_query(short_query):
     expanded_text = response.choices[0].message.content.strip()
     return expanded_text
 
-def retrieve_context(query, top_k=3):
-    """【感知模块】从数据库中检索与用户问题最相关的 Top-K 个论文片段"""
-    results = collection.query(
-        query_texts=[query],
-        n_results=top_k
+def retrieve_context(query, top_k=3, use_reranker=False, reranker_instance=None, coarse_top_k=20):
+    """【感知模块】从数据库中检索与用户问题最相关的 Top-K 个论文片段。
+
+    Args:
+        query: 查询文本
+        top_k: 最终返回的文档数
+        use_reranker: 是否启用重排
+        reranker_instance: BGEReranker 实例
+        coarse_top_k: 粗召回数量（仅 reranker 模式生效）
+
+    Returns:
+        (context_str, metadatas): 拼接后的上下文文本 + 元数据列表
+    """
+    if use_reranker and reranker_instance is not None:
+        # 粗召回 Top-N → 精排 Top-K
+        results = collection.query(query_texts=[query], n_results=coarse_top_k)
+        docs = results['documents'][0]
+        metas = results['metadatas'][0]
+        docs, metas = reranker_instance.rerank(query, docs, metas, top_k=top_k)
+    else:
+        results = collection.query(query_texts=[query], n_results=top_k)
+        docs = results['documents'][0]
+        metas = results['metadatas'][0]
+
+    context_str = "\n\n---\n\n".join(docs)
+    return context_str, metas
+
+def ask_rag_agent(query, mode="hyde", reranker_instance=None):
+    """【调度中心 2.0】支持多模式的 RAG 问答流程。
+
+    Args:
+        query: 用户问题
+        mode: 检索模式 - "direct" / "hyde" / "hyde_reranker"
+        reranker_instance: BGEReranker 实例（仅 hyde_reranker 模式需要）
+    """
+    print(f"\n🔍 [阶段 1] 收到原始问题: '{query}' (模式: {mode})")
+
+    if mode == "direct":
+        # 直接用原始 query 检索，不做 HyDE 重写
+        search_query = query
+        print("📌 [阶段 1] Direct 模式：跳过查询重写，直接检索。")
+    else:
+        # HyDE 或 HyDE+Reranker：先重写
+        search_query = rewrite_query(query)
+        print(f"✨ [阶段 1] 重写/扩写后的高维检索词:\n{search_query}\n")
+
+    # 根据模式决定是否启用 reranker
+    use_reranker = (mode == "hyde_reranker")
+    print("🔍 [阶段 2] 正在从本地论文库中检索...")
+    context, metadatas = retrieve_context(
+        search_query,
+        use_reranker=use_reranker,
+        reranker_instance=reranker_instance,
     )
-    # 将检索到的多个文本片段用分隔符拼接成一个大的上下文文本
-    contexts = results['documents'][0]
-    return "\n\n---\n\n".join(contexts)
-
-def ask_rag_agent(query):
-    """【调度中心 2.0】引入 HyDE 优化的完整 RAG 问答流程"""
-    print(f"\n🔍 [阶段 1] 收到原始问题: '{query}'")
-    
-    # 核心升级：先对简短问题进行重写
-    expanded_query = rewrite_query(query)
-    print(f"✨ [阶段 1] 重写/扩写后的高维检索词:\n{expanded_query}\n")
-
-    # 拿重写后的长文本去 ChromaDB 里搜索！
-    print("🔍 [阶段 2] 正在使用扩写词从本地论文库中检索...")
-    context = retrieve_context(expanded_query) 
     print("✅ [阶段 2] 检索完成！成功提取到强相关上下文。\n")
 
     prompt = f"""你是一个专业的 AI for Science 和 PINN 算法专家。
